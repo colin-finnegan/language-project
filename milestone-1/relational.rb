@@ -1,3 +1,4 @@
+#superclass
 class relationOperator
   attr_reader :left, :right
   def initialize(left, right)
