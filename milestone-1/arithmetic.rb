@@ -64,7 +64,7 @@ class Exponent
   end
 end
 
-class Negation
+class UnaryNegation
   attr_reader :operand
   def initialize(operand)
     @operand = operand
