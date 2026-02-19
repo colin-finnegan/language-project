@@ -1,64 +1,64 @@
-class And
+class BitwiseAnd
     attr_reader :left_operand, :right_operand
     def initialize(left_operand, right_operand)
         @left_operand = left_operand
         @right_operand = right_operand
     end
     def visit(visitor)
-        visitor.visit_and(self)
+        visitor.visit_bitwise_and(self)
     end
 end
 
-class Or
+class BitwiseOr
     attr_reader :left_operand, :right_operand
     def initialize(left_operand, right_operand)
         @left_operand = left_operand
         @right_operand = right_operand
     end
     def visit(visitor)
-        visitor.visit_xor(self)
+        visitor.visit_bitwise_or(self)
     end
 end
 
-class Or
+class BitwiseXor
     attr_reader :left_operand, :right_operand
     def initialize(left_operand, right_operand)
         @left_operand = left_operand
         @right_operand = right_operand
     end
     def visit(visitor)
-        visitor.visit_or(self)
+        visitor.visit_bitwise_xor(self)
     end
 end
 
-class Not
+class BitwiseNot
     attr_reader :operand
     def initialize(operand)
         @operand = operand
     end
     def visit(visitor)
-        visitor.visit_not(self)
+        visitor.visit_bitwise_not(self)
     end
 end
 
-class LeftShift
+class BitwiseLeftShift
     attr_reader :left_operand, :right_operand
     def initialize(left_operand, right_operand)
         @left_operand = left_operand
         @right_operand = right_operand
     end
     def visit(visitor)
-        visitor.visit_left_shift(self)
+        visitor.visit_bitwise_left_shift(self)
     end
 end
 
-class RightShift
+class BitwiseRightShift
     attr_reader :left_operand, :right_operand
     def initialize(left_operand, right_operand)
         @left_operand = left_operand
         @right_operand = right_operand
     end
     def visit(visitor)
-        visitor.visit_right_shift(self)
+        visitor.visit_bitwise_right_shift(self)
     end
 end
