@@ -1,26 +1,24 @@
-class And
+class LogicalNode
     attr_reader :left_operand, :right_operand
     def initialize(left_operand, right_operand)
         @left_operand = left_operand
         @right_operand = right_operand
     end
+end
+
+class And < LogicalNode
     def visit(visitor)
         visitor.visit_and(self)
     end
 end
 
-class Or
-    attr_reader :left_operand, :right_operand
-    def initialize(left_operand, right_operand)
-        @left_operand = left_operand
-        @right_operand = right_operand
-    end
+class Or < LogicalNode
     def visit(visitor)
         visitor.visit_or(self)
     end
 end
 
-class Not
+class Not < LogicalNode
     attr_reader :operand
     def initialize(operand)
         @operand = operand

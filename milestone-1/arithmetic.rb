@@ -1,64 +1,42 @@
-class Add
-  attr_reader :left, :right
+class ArithmeticNode
+  attr :left, :right
   def initialize(left, right)
     @left = left
     @right = right
   end
+end
+
+class Add < ArithmeticNode
   def visit(visitor)
     visitor.visit_add(self)
   end
 end
 
-class Subtract
-  attr_reader :left, :right
-  def initialize(left, right)
-    @left = left
-    @right = right
-  end
+class Subtract < ArithmeticNode
   def visit(visitor)
     visitor.visit_subtract(self)
   end
 end
 
-class Multiply
-  attr_reader :left, :right
-  def initialize(left, right)
-    @left = left
-    @right = right
-  end
+class Multiply < ArithmeticNode
   def visit(visitor)
     visitor.visit_multiply(self)
   end
 end
 
-class Divide
-  attr_reader :left, :right
-  def initialize(left, right)
-    @left = left
-    @right = right
-  end
+class Divide < ArithmeticNode
   def visit(visitor)
     visitor.visit_divide(self)
   end
 end
 
-class Modulo
-  attr_reader :left, :right
-  def initialize(left, right)
-    @left = left
-    @right = right
-  end
+class Modulo < ArithmeticNode
   def visit(visitor)
     visitor.visit_modulo(self)
   end
 end
 
-class Exponent
-  attr_reader :left, :right
-  def initialize(left, right)
-    @left = left
-    @right = right
-  end
+class Exponent < ArithmeticNode
   def visit(visitor)
     visitor.visit_exponent(self)
   end
