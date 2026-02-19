@@ -6,7 +6,7 @@ class Equals
   end
 
   def visit(visitor)
-    visit.visit_equals(self)
+    visitor.visit_equals(self)
   end
 end
 
@@ -18,7 +18,7 @@ class NotEquals
   end
 
   def visit(visitor)
-    visit.visit_equals(self)
+    visitor.visit_equals(self)
   end
 end
 
@@ -30,7 +30,7 @@ class LessThan
   end
 
   def visit(visitor)
-    visit.visit_lessThan(self)
+    visitor.visit_lessThan(self)
   end
 end
 
@@ -42,7 +42,7 @@ class GreaterThan
   end
 
   def visit(visitor)
-    visit.visit_greaterThan(self)
+    visitor.visit_greaterThan(self)
   end
 end
 
@@ -54,7 +54,7 @@ class LessThanEqual
   end
 
   def visit(visitor)
-    visit.visit_LessThanEqual(self)
+    visitor.visit_LessThanEqual(self)
   end
 end
 
@@ -66,6 +66,6 @@ class GreaterThanEqual
   end
 
   def visit(visitor)
-    visit.visit_greaterThanEqual(self)
+    visitor.visit_greaterThanEqual(self)
   end
 end
