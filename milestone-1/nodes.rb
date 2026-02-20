@@ -1,0 +1,15 @@
+require_relative './AstNode'
+
+require_relative './primitive'
+require_relative './arithmetic'
+require_relative './logical'
+require_relative './bitwise'
+require_relative './relational'
+require_relative './casting'
+require_relative './rvalues'
+require_relative './print'
+require_relative './assignment'
+require_relative './block'
+
+require_relative './translator'
+require_relative './evaluator'
