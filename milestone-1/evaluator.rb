@@ -212,7 +212,110 @@ class Evaluator
     end
 
     # Relational
-    
-    
-    
-    
+    def visit_equals(node)
+        left = node.left.visit(self)
+        right = node.right.visit(self)
+        raw_result = left.value == right.value
+
+        return BooleanPrimitive.new(raw_result)
+    end
+
+    def visit_not_equals(node)
+        left = node.left.visit(self)
+        right = node.right.visit(self)
+        raw_result = left.value != right.value
+
+        return BooleanPrimitive.new(raw_result)
+    end
+
+    def visit_lessThan(node)
+        left = node.left.visit(self)
+        right = node.right.visit(self)
+        assert_numeric(left)
+        assert_numeric(right)
+
+        raw_result = left.value < right.value
+        return BooleanPrimitive.new(raw_result)
+    end
+
+    def visit_greaterThan(node)
+        left = node.left.visit(self)
+        right = node.right.visit(self)
+        assert_numeric(left)
+        assert_numeric(right)
+
+        raw_result = left.value > right.value
+        return BooleanPrimitive.new(raw_result)
+    end
+
+    def visit_LessThanEqual(node)
+        left = node.left.visit(self)
+        right = node.right.visit(self)
+        assert_numeric(left)
+        assert_numeric(right)
+
+        raw_result = left.value <= right.value
+        return BooleanPrimitive.new(raw_result)
+    end
+
+    def visit_greaterThanEqual(node)
+        left = node.left.visit(self)
+        right = node.right.visit(self)
+        assert_numeric(left)
+        assert_numeric(right)
+
+        raw_result = left.value >= right.value
+        return BooleanPrimitive.new(raw_result)
+    end
+
+    # Casting
+    def visit_float_to_int(node)
+        ftoi_node = node.operand.visit(self)
+        assert_numeric(ftoi_node)
+
+        return IntegerPrimitive.new(ftoi_node.value.to_i)
+    end
+
+    def visit_int_to_float(node)
+        itof_node = node.operand.visit(self)
+        assert_numeric(itof_node)
+
+        return FloatPrimitive.new(itof_node.value.to_f)
+    end
+
+    # rValues
+    def visit_variable(node)
+        var_name = node.name
+        value = @runtime.lookup(var_name)
+
+        return value        
+    end
+
+    # Print
+    def visit_print(node)
+        print_statement = node.operand.visit(self)
+        puts print_statement.value
+
+        return NullPrimitive.new
+    end
+
+    # Assignment
+    def visit_assignment(node)
+        value = node.right.visit(self)
+        var_name = node.left.is_a?(String) ? node.left : node.left.name
+
+        @runtime.assign(var_nam, value)
+
+        return value
+    end
+
+    # Block
+    def visit_block(node)
+        last_result = NullPrimitive.new
+
+        node.statements.each do |statement|
+            last_result = statement.visit(self)
+        end
+
+        return last_result
+    end

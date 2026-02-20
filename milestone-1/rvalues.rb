@@ -1,5 +1,5 @@
 class Variable < AstNode
-    attr_reader :operand
+    attr_reader :name
     def initialize(name)
         @name = name
     end
