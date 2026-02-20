@@ -1,4 +1,4 @@
-class PrimitiveNode
+class PrimitiveNode < AstNode
     attr_reader :value
     def initialize(value)
     @value = value

@@ -1,5 +1,5 @@
 #superclass
-class relationOperator
+class relationOperator < AstNode
   attr_reader :left, :right
   def initialize(left, right)
     @left = left
