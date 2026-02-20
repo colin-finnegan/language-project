@@ -1,6 +1,6 @@
 class Evaluator
-    def initialize()
-        @memory = {}
+    def initialize(runtime)
+        @runtime = runtime
     end
 
     # Primitives
@@ -88,9 +88,9 @@ class Evaluator
         raw_result = -negate.value
 
         if negate.is_a?(FloatPrimitive)
-            return FloatPrimitive.new(raw_value.to_f)
+            return FloatPrimitive.new(raw_result.to_f)
         else
-            IntegerPrimitive.new(raw_value.to_i)
+            return IntegerPrimitive.new(raw_result.to_i)
         end
     end
 
@@ -134,7 +134,7 @@ class Evaluator
     end
 
     def visit_not(node)
-        not_node = node.operand(self)
+        not_node = node.operand.visit(self)
         assert_boolean(not_node)
 
         return BooleanPrimitive.new(!not_node.value)
@@ -304,7 +304,7 @@ class Evaluator
         value = node.right.visit(self)
         var_name = node.left.is_a?(String) ? node.left : node.left.name
 
-        @runtime.assign(var_nam, value)
+        @runtime.assign(var_name, value)
 
         return value
     end
