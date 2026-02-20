@@ -15,7 +15,7 @@ end
 
 class NotEquals < relationOperator
   def visit(visitor)
-    visitor.visit_equals(self)
+    visitor.visit_not_equals(self)
   end
 end
 
