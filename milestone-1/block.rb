@@ -6,4 +6,8 @@ class Block < AstNode
     def visit(visitor)
         visitor.visit_block(self)
     end
+
+    def precedence
+    Translator::PRECEDENCE[:block]
+  end
 end

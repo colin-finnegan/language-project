@@ -6,4 +6,8 @@ class Print < AstNode
     def visit(visitor)
         visitor.visit_print(self)
     end
+
+    def precedence
+        Translator::PRECEDENCE[:print]
+    end
 end

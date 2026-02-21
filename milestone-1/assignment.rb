@@ -8,4 +8,8 @@ class Assignment < AstNode
   def visit(visitor)
     visitor.visit_assignment(self)
   end
+
+  def precedence
+    Translator::PRECEDENCE[:assignment]
+  end
 end

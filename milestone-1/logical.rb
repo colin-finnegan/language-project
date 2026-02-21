@@ -10,11 +10,18 @@ class And < LogicalNode
     def visit(visitor)
         visitor.visit_and(self)
     end
+
+    def precedence
+        Translator::PRECEDENCE[:logAND]
+    end
 end
 
 class Or < LogicalNode
     def visit(visitor)
         visitor.visit_or(self)
+    end
+    def precedence
+        Translator::PRECEDENCE[:logOR]
     end
 end
 
@@ -26,4 +33,8 @@ class Not < LogicalNode
     def visit(visitor)
         visitor.visit_not(self)
     end
+
+    def precedence
+    Translator::PRECEDENCE[:logNOT]
+  end
 end

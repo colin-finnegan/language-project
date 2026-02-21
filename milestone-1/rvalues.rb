@@ -6,4 +6,8 @@ class Variable < AstNode
     def visit(visitor)
         visitor.visit_variable(self)
     end
+
+    def precedence
+    Translator::PRECEDENCE[:rvalue]
+  end
 end

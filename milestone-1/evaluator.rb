@@ -60,7 +60,7 @@ class Evaluator
 
         if right.value == 0
             raise "Runtime Error: Division by 0"
-
+        end
         return wrap_numeric_result(left, right, left.value / right.value)
     end
 
@@ -114,7 +114,7 @@ class Evaluator
         assert_boolean(left)
         if left.value == false
             return left
-        
+        end
         right = node.right.visit(self)
         assert_boolean(right)
 
@@ -126,7 +126,7 @@ class Evaluator
         assert_boolean(left)
         if left.value == true
             return left
-        
+        end
         right = node.right.visit(self)
         assert_boolean(right)
 
@@ -319,3 +319,4 @@ class Evaluator
 
         return last_result
     end
+  end
