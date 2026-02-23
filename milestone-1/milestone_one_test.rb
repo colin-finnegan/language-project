@@ -9,11 +9,11 @@ evaluator = Evaluator.new(runtime)
 # puts translator.translate(ast)
 
 def run_test(name, ast, translator, evaluator)
-  puts "=============================="
+  puts "-----------------"
   puts name
-  puts "---- Translation ----"
+  puts "-- Translation --"
   puts translator.translate(ast)
-  puts "---- Evaluation ----"
+  puts "-- Evaluation --"
   result = ast.visit(evaluator)
   puts "Result: #{result.value}" unless result.is_a?(NullPrimitive)
   puts
@@ -129,6 +129,7 @@ run_test("n = 9 & 3", assign_ast, translator, evaluator)
 # multi - statements :
 
 puts "Multi-statement Program 1"
+puts "-----------------"
 
 prog1 = Block.new([
   Assignment.new(
@@ -145,6 +146,7 @@ prog1.visit(evaluator)
 
 
 puts "Multi-statement Program 2"
+puts "-----------------"
 
 prog2 = Block.new([
   Assignment.new(
@@ -175,6 +177,7 @@ prog2.visit(evaluator)
 
 
 puts "Multi-statement Program 3"
+puts "-----------------"
 
 prog3 = Block.new([
   Assignment.new(
@@ -211,3 +214,85 @@ prog3 = Block.new([
 
 puts translator.translate(prog3)
 prog3.visit(evaluator)
+
+# Type-checking failure tests
+def run_type_error_test(name, ast, translator, evaluator)
+  puts "-----------------"
+  puts name
+  puts "-- Translation --"
+  puts translator.translate(ast)
+  print "-- Evaluation : "
+  begin
+    result = ast.visit(evaluator)
+    puts "Result: #{result.value}"
+  rescue => e
+    puts "Type Error: #{e.message}"
+  end
+  puts
+end
+
+# 7.5 << 2
+run_type_error_test(
+  "7.5 << 2",
+  BitwiseLeftShift.new(
+    FloatPrimitive.new(7.5),
+    IntegerPrimitive.new(2)
+  ),
+  translator,
+  evaluator
+)
+
+# true >= 10
+run_type_error_test(
+  "true >= 10",
+  GreaterThanEqual.new(
+    BooleanPrimitive.new(true),
+    IntegerPrimitive.new(10)
+  ),
+  translator,
+  evaluator
+)
+
+# "fooo" / 3 -> String cannot be divided
+run_type_error_test(
+  '"fooo" / 3',
+  Divide.new(
+    StringPrimitive.new("fooo"),
+    IntegerPrimitive.new(3)
+  ),
+  translator,
+  evaluator
+)
+
+# Float + Boolean
+run_type_error_test(
+  "3.14 + false",
+  Add.new(
+    FloatPrimitive.new(3.14),
+    BooleanPrimitive.new(false)
+  ),
+  translator,
+  evaluator
+)
+
+# Integer && String -> logical AND expects booleans
+run_type_error_test(
+  "5 && 'hello'",
+  And.new(
+    IntegerPrimitive.new(5),
+    StringPrimitive.new("hello")
+  ),
+  translator,
+  evaluator
+)
+
+# Bitwise OR with float
+run_type_error_test(
+  "2.5 | 1",
+  BitwiseOr.new(
+    FloatPrimitive.new(2.5),
+    IntegerPrimitive.new(1)
+  ),
+  translator,
+  evaluator
+)
