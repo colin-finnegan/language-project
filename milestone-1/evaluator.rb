@@ -296,7 +296,7 @@ class Evaluator
         print_statement = node.operand.visit(self)
         puts print_statement.value
 
-        return NullPrimitive.new
+        return NullPrimitive.new(nil)
     end
 
     # Assignment

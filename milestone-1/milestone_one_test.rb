@@ -200,7 +200,7 @@ prog3 = Block.new([
     )
   ),
   Print.new(
-    Negation.new(
+    UnaryNegation.new(
       Exponent.new(
         Variable.new("n"),
         IntegerPrimitive.new(2)
