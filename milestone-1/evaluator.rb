@@ -296,7 +296,7 @@ class Evaluator
         print_statement = node.operand.visit(self)
         puts print_statement.value
 
-        return NullPrimitive.new(nil)
+        return NullPrimitive.new
     end
 
     # Assignment
@@ -311,7 +311,7 @@ class Evaluator
 
     # Block
     def visit_block(node)
-        last_result = NullPrimitive.new(nil)
+        last_result = NullPrimitive.new
 
         node.statements.each do |statement|
             last_result = statement.visit(self)

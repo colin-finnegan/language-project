@@ -46,6 +46,10 @@ class StringPrimitive < PrimitiveNode
 end
 
 class NullPrimitive < PrimitiveNode
+    def initialize
+        @value = nil
+    end
+    
     def visit(visitor)
         visitor.visit_null_primitive(self)
     end

@@ -18,6 +18,8 @@ def run_test(label, tree, eval_visitor)
     puts "Result: #{result.value} (Type: #{result.class})"
   rescue => e
     puts "Error: #{e.message}"
+    puts "Location: #{e.backtrace[0]}" 
+    puts "----------------------------------" 
   end
   puts "\n"
 end
