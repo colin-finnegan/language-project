@@ -85,8 +85,8 @@ run_test("!(3.3 > 3.2)", logic_ast, translator, evaluator)
 
 # double negation --(6 * 8) :
 
-double_neg_ast = Negation.new(
-  Negation.new(
+double_neg_ast = UnaryNegation.new(
+  UnaryNegation.new(
     Multiply.new(
       IntegerPrimitive.new(6),
       IntegerPrimitive.new(8)

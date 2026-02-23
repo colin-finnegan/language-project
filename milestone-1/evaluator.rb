@@ -311,7 +311,7 @@ class Evaluator
 
     # Block
     def visit_block(node)
-        last_result = NullPrimitive.new
+        last_result = NullPrimitive.new(nil)
 
         node.statements.each do |statement|
             last_result = statement.visit(self)
