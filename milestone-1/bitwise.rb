@@ -1,8 +1,8 @@
 class BitwiseNode < AstNode
-    attr_reader :left_operand, :right_operand
-    def initialize(left_operand, right_operand)
-        @left_operand = left_operand
-        @right_operand = right_operand
+    attr_reader :left, :right
+    def initialize(left, right)
+        @left = left
+        @right = right
     end
 end
 
