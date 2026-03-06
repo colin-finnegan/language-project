@@ -72,7 +72,8 @@ class Translator
   end
 
   def visit_boolean_primitive(node)
-    node.value.to_s
+    #node.value.to_s
+    node.value ? "True" : "False"
   end
 
   def visit_string_primitive(node)
@@ -80,7 +81,7 @@ class Translator
   end
 
   def visit_null_primitive(node)
-    "null"
+    "None"
   end
 
   # Arithmetic :
@@ -168,18 +169,18 @@ class Translator
   def visit_and(node)
     left_str = parenthesize(node.left, PRECEDENCE[:logAND])
     right_str = parenthesize(node.right, PRECEDENCE[:logAND])
-    "#{left_str} && #{right_str}"
+    "#{left_str} and #{right_str}"
   end
 
   def visit_or(node)
     left_str = parenthesize(node.left, PRECEDENCE[:logOR])
     right_str = parenthesize(node.right, PRECEDENCE[:logOR])
-    "#{left_str} || #{right_str}"
+    "#{left_str} or #{right_str}"
   end
 
   def visit_not(node)
     str = parenthesize(node.operand, PRECEDENCE[:logNOT])
-    "!#{str}"
+    "not #{str}"
   end
 
   # relational
@@ -238,7 +239,7 @@ class Translator
 
   def visit_print(node)
     str = node.operand.visit(self)
-    "print #{str}"
+    "print(#{str})"
   end
 
   # rvalues
@@ -251,13 +252,11 @@ class Translator
   # casting
 
   def visit_float_to_int(node)
-    str = parenthesize(node.operand, PRECEDENCE[:float2Int])
-    "int#{str}"
+    "int(#{node.operand.visit(self)})"
   end
 
   def visit_int_to_float(node)
-    str = parenthesize(node.operand, PRECEDENCE[:int2Float])
-    "float#{str}"
+    "float(#{node.operand.visit(self)})"
   end
 
 
