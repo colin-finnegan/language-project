@@ -28,6 +28,10 @@ class Evaluator
     def visit_add(node)
         left = node.left.visit(self)
         right = node.right.visit(self)
+
+        return left if is_null?(left)
+        return right if is_null?(right)
+
         assert_numeric(left)
         assert_numeric(right)
 
@@ -37,6 +41,10 @@ class Evaluator
     def visit_subtract(node)
         left = node.left.visit(self)
         right = node.right.visit(self)
+        
+        return left if is_null?(left)
+        return right if is_null?(right)
+        
         assert_numeric(left)
         assert_numeric(right)
 
@@ -46,6 +54,10 @@ class Evaluator
     def visit_multiply(node)
         left = node.left.visit(self)
         right = node.right.visit(self)
+        
+        return left if is_null?(left)
+        return right if is_null?(right)
+        
         assert_numeric(left)
         assert_numeric(right)
 
@@ -55,6 +67,10 @@ class Evaluator
     def visit_divide(node)
         left = node.left.visit(self)
         right = node.right.visit(self)
+        
+        return left if is_null?(left)
+        return right if is_null?(right)
+        
         assert_numeric(left)
         assert_numeric(right)
 
@@ -67,6 +83,10 @@ class Evaluator
     def visit_modulo(node)
         left = node.left.visit(self)
         right = node.right.visit(self)
+        
+        return left if is_null?(left)
+        return right if is_null?(right)
+        
         assert_numeric(left)
         assert_numeric(right)
 
@@ -76,6 +96,10 @@ class Evaluator
     def visit_exponent(node)
         left = node.left.visit(self)
         right = node.right.visit(self)
+        
+        return left if is_null?(left)
+        return right if is_null?(right)
+        
         assert_numeric(left)
         assert_numeric(right)
 
@@ -84,6 +108,9 @@ class Evaluator
 
     def visit_negation(node)
         negate = node.operand.visit(self)
+
+        return negate if is_null?(negate)
+
         assert_numeric(negate)
         raw_result = -negate.value
 
@@ -108,14 +135,20 @@ class Evaluator
         end
     end
 
+    def is_null?(node)
+        node.is_a?(NullPrimitive)
+    end
+
     # Logical
     def visit_and(node)
         left = node.left.visit(self)
+        return left if is_null?(left)
         assert_boolean(left)
         if left.value == false
             return left
         end
         right = node.right.visit(self)
+        return right if is_null?(right)
         assert_boolean(right)
 
         return right
@@ -123,11 +156,13 @@ class Evaluator
 
     def visit_or(node)
         left = node.left.visit(self)
+        return left if is_null?(left)
         assert_boolean(left)
         if left.value == true
             return left
         end
         right = node.right.visit(self)
+        return right if is_null?(right)
         assert_boolean(right)
 
         return right
@@ -135,6 +170,9 @@ class Evaluator
 
     def visit_not(node)
         not_node = node.operand.visit(self)
+
+        return not_node if is_null?(not_node)
+
         assert_boolean(not_node)
 
         return BooleanPrimitive.new(!not_node.value)
@@ -150,6 +188,10 @@ class Evaluator
     def visit_bitwise_and(node)
         left = node.left.visit(self)
         right = node.right.visit(self)
+         
+        return left if is_null?(left)
+        return right if is_null?(right)
+        
         assert_integer(left)
         assert_integer(right)
 
@@ -160,6 +202,10 @@ class Evaluator
     def visit_bitwise_or(node)
         left = node.left.visit(self)
         right = node.right.visit(self)
+         
+        return left if is_null?(left)
+        return right if is_null?(right)
+        
         assert_integer(left)
         assert_integer(right)
 
@@ -170,6 +216,10 @@ class Evaluator
     def visit_bitwise_xor(node)
         left = node.left.visit(self)
         right = node.right.visit(self)
+         
+        return left if is_null?(left)
+        return right if is_null?(right)
+        
         assert_integer(left)
         assert_integer(right)
 
@@ -179,6 +229,7 @@ class Evaluator
     
     def visit_bitwise_not(node)
         bitwise_not = node.operand.visit(self)
+        return bitwise_not if is_null?(bitwise_not)
         assert_integer(bitwise_not)
 
         raw_result = ~bitwise_not.value
@@ -188,6 +239,10 @@ class Evaluator
     def visit_bitwise_left_shift(node)
         left = node.left.visit(self)
         right = node.right.visit(self)
+         
+        return left if is_null?(left)
+        return right if is_null?(right)
+        
         assert_integer(left)
         assert_integer(right)
 
@@ -198,6 +253,10 @@ class Evaluator
     def visit_bitwise_right_shift(node)
         left = node.left.visit(self)
         right = node.right.visit(self)
+         
+        return left if is_null?(left)
+        return right if is_null?(right)
+        
         assert_integer(left)
         assert_integer(right)
 
@@ -215,6 +274,10 @@ class Evaluator
     def visit_equals(node)
         left = node.left.visit(self)
         right = node.right.visit(self)
+
+        return left if is_null?(left)
+        return right if is_null?(right)
+        
         raw_result = left.value == right.value
 
         return BooleanPrimitive.new(raw_result)
@@ -223,6 +286,10 @@ class Evaluator
     def visit_not_equals(node)
         left = node.left.visit(self)
         right = node.right.visit(self)
+
+        return left if is_null?(left)
+        return right if is_null?(right)
+        
         raw_result = left.value != right.value
 
         return BooleanPrimitive.new(raw_result)
@@ -231,6 +298,10 @@ class Evaluator
     def visit_lessThan(node)
         left = node.left.visit(self)
         right = node.right.visit(self)
+        
+        return left if is_null?(left)
+        return right if is_null?(right)
+        
         assert_numeric(left)
         assert_numeric(right)
 
@@ -241,6 +312,10 @@ class Evaluator
     def visit_greaterThan(node)
         left = node.left.visit(self)
         right = node.right.visit(self)
+        
+        return left if is_null?(left)
+        return right if is_null?(right)
+        
         assert_numeric(left)
         assert_numeric(right)
 
@@ -251,6 +326,10 @@ class Evaluator
     def visit_LessThanEqual(node)
         left = node.left.visit(self)
         right = node.right.visit(self)
+        
+        return left if is_null?(left)
+        return right if is_null?(right)
+        
         assert_numeric(left)
         assert_numeric(right)
 
@@ -261,6 +340,10 @@ class Evaluator
     def visit_greaterThanEqual(node)
         left = node.left.visit(self)
         right = node.right.visit(self)
+        
+        return left if is_null?(left)
+        return right if is_null?(right)
+        
         assert_numeric(left)
         assert_numeric(right)
 
@@ -271,6 +354,7 @@ class Evaluator
     # Casting
     def visit_float_to_int(node)
         ftoi_node = node.operand.visit(self)
+        return ftoi_node if is_null?(ftoi_node)
         assert_numeric(ftoi_node)
 
         return IntegerPrimitive.new(ftoi_node.value.to_i)
@@ -278,6 +362,7 @@ class Evaluator
 
     def visit_int_to_float(node)
         itof_node = node.operand.visit(self)
+        return itof_node if is_null?(itof_node)
         assert_numeric(itof_node)
 
         return FloatPrimitive.new(itof_node.value.to_f)
@@ -294,7 +379,11 @@ class Evaluator
     # Print
     def visit_print(node)
         print_statement = node.operand.visit(self)
-        puts print_statement.value
+        if is_null?(print_statement)
+            puts "null"
+        else
+            puts print_statement.value
+        end
 
         return NullPrimitive.new
     end
