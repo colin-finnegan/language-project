@@ -1,4 +1,4 @@
-class BitwiseNode < AstNode
+class BitwiseNode
     attr_reader :left, :right
     def initialize(left, right)
         @left = left

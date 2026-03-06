@@ -1,4 +1,4 @@
-class ArithmeticNode < AstNode
+class ArithmeticNode
   attr :left, :right
   def initialize(left, right)
     @left = left

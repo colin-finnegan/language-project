@@ -1,4 +1,4 @@
-class Block < AstNode
+class Block
     attr_reader :statements
     def initialize(statements)
         @statements = statements

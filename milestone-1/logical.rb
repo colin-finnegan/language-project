@@ -1,4 +1,4 @@
-class LogicalNode < AstNode
+class LogicalNode
     attr_reader :left, :right
     def initialize(left, right)
         @left = left

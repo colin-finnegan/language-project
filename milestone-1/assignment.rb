@@ -1,4 +1,4 @@
-class Assignment < AstNode
+class Assignment
   attr_reader :left, :right
   def initialize(left, right)
     @left = left # rvalue node

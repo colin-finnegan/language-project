@@ -1,4 +1,4 @@
-class Variable < AstNode
+class Variable
     attr_reader :name
     def initialize(name)
         @name = name

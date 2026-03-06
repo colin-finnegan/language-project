@@ -1,4 +1,4 @@
-class CastingNode < AstNode
+class CastingNode
     attr_reader :operand
     def initialize(operand)
         @operand = operand

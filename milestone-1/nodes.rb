@@ -1,5 +1,3 @@
-require_relative './AstNode'
-
 require_relative './primitive'
 require_relative './arithmetic'
 require_relative './logical'

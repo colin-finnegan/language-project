@@ -1,4 +1,4 @@
-class Print < AstNode
+class Print
     attr_reader :operand
     def initialize(operand)
         @operand = operand
