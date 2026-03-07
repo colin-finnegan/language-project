@@ -1,0 +1,61 @@
+program = block
+
+block = statement*
+
+statement = print
+          | assignment
+          | expression
+
+print = "print" expression
+
+expression = assignment
+
+assignment = VARIABLE "=" assignment
+           | logicalor
+
+logicalor = logicalor "||" logicaland
+           | logicaland
+
+logicaland = logicaland "&&" relational
+            | relational
+        
+relational = relational "==" additive
+           | relational "!=" additive
+           | relational "<"  additive
+           | relational ">"  additive
+           | relational "<=" additive
+           | relational ">=" additive
+           | additive
+
+additive = additive "+" multiplicative
+         | additive "-" multiplicative
+         | multiplicative
+
+multiplicative = multiplicative "*" power
+               | multiplicative "/" power
+               | multiplicative "%" power
+               | multiplicative "&" power
+               | multiplicative "|" power
+               | multiplicative "^" power
+               | multiplicative "<<" power
+               | multiplicative ">>" power
+               | power
+
+power = unary "**" power
+      | unary
+
+unary = "!" unary
+      | "-" unary
+      | "~" unary
+      | casting
+      | primary
+
+casting = "floattoint" "(" expression ")"
+        | "inttofloat" "(" expression ")"
+
+primary = INTEGER
+        | FLOAT
+        | STRING
+        | BOOLEAN
+        | VARIABLE
+        | "(" expression ")"
