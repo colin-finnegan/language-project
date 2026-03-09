@@ -1,8 +1,17 @@
 class ArithmeticNode
-  attr :left, :right
-  def initialize(left, right)
+  attr_reader :left, :right, :indices
+  def initialize(left, right, indices)
     @left = left
     @right = right
+    @indices = indices
+  end
+
+  def start_index
+    @indices[0]
+  end
+
+  def end_index
+    @indices[1]
   end
 end
 
@@ -67,10 +76,20 @@ class Exponent < ArithmeticNode
 end
 
 class UnaryNegation
-  attr_reader :operand
-  def initialize(operand)
+  attr_reader :operand, :indices
+  def initialize(operand, indices)
     @operand = operand
+    @indices = indices
   end
+
+  def start_index
+    indices[0]
+  end
+
+  def end_index
+    indices[1]
+  end
+
   def visit(visitor)
     visitor.visit_negation(self)
   end

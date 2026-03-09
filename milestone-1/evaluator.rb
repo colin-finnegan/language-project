@@ -115,9 +115,9 @@ class Evaluator
         raw_result = -negate.value
 
         if negate.is_a?(FloatPrimitive)
-            return FloatPrimitive.new(raw_result.to_f)
+            return FloatPrimitive.new(raw_result.to_f, negate.indices)
         else
-            return IntegerPrimitive.new(raw_result.to_i)
+            return IntegerPrimitive.new(raw_result.to_i, negate.indices)
         end
     end
 
@@ -128,10 +128,11 @@ class Evaluator
     end
 
     def wrap_numeric_result(left, right, raw_value)
+        indices = [left.start_index, right.end_index]
         if left.is_a?(FloatPrimitive) || right.is_a?(FloatPrimitive)
-            FloatPrimitive.new(raw_value.to_f)
+            FloatPrimitive.new(raw_value.to_f, indices)
         else
-            IntegerPrimitive.new(raw_value.to_i)
+            IntegerPrimitive.new(raw_value.to_i, indices)
         end
     end
 
@@ -175,7 +176,7 @@ class Evaluator
 
         assert_boolean(not_node)
 
-        return BooleanPrimitive.new(!not_node.value)
+        return BooleanPrimitive.new(!not_node.value, node.indices)
     end
 
     def assert_boolean(node)
@@ -196,7 +197,7 @@ class Evaluator
         assert_integer(right)
 
         raw_result = left.value & right.value
-        return IntegerPrimitive.new(raw_result)
+        return IntegerPrimitive.new(raw_result, node.indices)
     end
     
     def visit_bitwise_or(node)
@@ -210,7 +211,7 @@ class Evaluator
         assert_integer(right)
 
         raw_result = left.value | right.value
-        return IntegerPrimitive.new(raw_result)
+        return IntegerPrimitive.new(raw_result, node.indices)
     end
     
     def visit_bitwise_xor(node)
@@ -224,7 +225,7 @@ class Evaluator
         assert_integer(right)
 
         raw_result = left.value ^ right.value
-        return IntegerPrimitive.new(raw_result)
+        return IntegerPrimitive.new(raw_result, node.indices)
     end
     
     def visit_bitwise_not(node)
@@ -233,7 +234,7 @@ class Evaluator
         assert_integer(bitwise_not)
 
         raw_result = ~bitwise_not.value
-        return IntegerPrimitive.new(raw_result)
+        return IntegerPrimitive.new(raw_result, node.indices)
     end
     
     def visit_bitwise_left_shift(node)
@@ -247,7 +248,7 @@ class Evaluator
         assert_integer(right)
 
         raw_result = left.value << right.value
-        return IntegerPrimitive.new(raw_result)
+        return IntegerPrimitive.new(raw_result, node.indices)
     end
     
     def visit_bitwise_right_shift(node)
@@ -261,7 +262,7 @@ class Evaluator
         assert_integer(right)
 
         raw_result = left.value >> right.value
-        return IntegerPrimitive.new(raw_result)
+        return IntegerPrimitive.new(raw_result, node.indices)
     end
 
     def assert_integer(node)
@@ -280,7 +281,7 @@ class Evaluator
         
         raw_result = left.value == right.value
 
-        return BooleanPrimitive.new(raw_result)
+        return BooleanPrimitive.new(raw_result, node.indices)
     end
 
     def visit_not_equals(node)
@@ -292,7 +293,7 @@ class Evaluator
         
         raw_result = left.value != right.value
 
-        return BooleanPrimitive.new(raw_result)
+        return BooleanPrimitive.new(raw_result, node.indices)
     end
 
     def visit_lessThan(node)
@@ -306,7 +307,7 @@ class Evaluator
         assert_numeric(right)
 
         raw_result = left.value < right.value
-        return BooleanPrimitive.new(raw_result)
+        return BooleanPrimitive.new(raw_result, node.indices)
     end
 
     def visit_greaterThan(node)
@@ -320,7 +321,7 @@ class Evaluator
         assert_numeric(right)
 
         raw_result = left.value > right.value
-        return BooleanPrimitive.new(raw_result)
+        return BooleanPrimitive.new(raw_result, node.indices)
     end
 
     def visit_LessThanEqual(node)
@@ -334,7 +335,7 @@ class Evaluator
         assert_numeric(right)
 
         raw_result = left.value <= right.value
-        return BooleanPrimitive.new(raw_result)
+        return BooleanPrimitive.new(raw_result, node.indices)
     end
 
     def visit_greaterThanEqual(node)
@@ -348,7 +349,7 @@ class Evaluator
         assert_numeric(right)
 
         raw_result = left.value >= right.value
-        return BooleanPrimitive.new(raw_result)
+        return BooleanPrimitive.new(raw_result, node.indices)
     end
 
     # Casting
@@ -357,7 +358,7 @@ class Evaluator
         return ftoi_node if is_null?(ftoi_node)
         assert_numeric(ftoi_node)
 
-        return IntegerPrimitive.new(ftoi_node.value.to_i)
+        return IntegerPrimitive.new(ftoi_node.value.to_i, node.indices)
     end
 
     def visit_int_to_float(node)
@@ -365,7 +366,7 @@ class Evaluator
         return itof_node if is_null?(itof_node)
         assert_numeric(itof_node)
 
-        return FloatPrimitive.new(itof_node.value.to_f)
+        return FloatPrimitive.new(itof_node.value.to_f, node.indices)
     end
 
     # rValues
@@ -385,7 +386,8 @@ class Evaluator
             puts print_statement.value
         end
 
-        return NullPrimitive.new
+        return NullPrimitive.new(node.indices)
+        #return print_statement
     end
 
     # Assignment
@@ -400,7 +402,7 @@ class Evaluator
 
     # Block
     def visit_block(node)
-        last_result = NullPrimitive.new
+        last_result = NullPrimitive.new(node.indices)
 
         node.statements.each do |statement|
             last_result = statement.visit(self)
@@ -408,4 +410,4 @@ class Evaluator
 
         return last_result
     end
-  end
+end

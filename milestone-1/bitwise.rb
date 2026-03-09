@@ -1,8 +1,17 @@
 class BitwiseNode
-    attr_reader :left, :right
-    def initialize(left, right)
+    attr_reader :left, :right, :indices
+    def initialize(left, right, indices)
         @left = left
         @right = right
+        @indices = indices
+    end
+
+    def start_index
+        @indices[0]  
+    end
+
+    def end_index
+        @indices[1]  
     end
 end
 
@@ -12,8 +21,8 @@ class BitwiseAnd < BitwiseNode
     end
 
     def precedence
-    Translator::PRECEDENCE[:bitAND]
-  end
+        Translator::PRECEDENCE[:bitAND]
+    end
 end
 
 class BitwiseOr < BitwiseNode
@@ -22,8 +31,8 @@ class BitwiseOr < BitwiseNode
     end
 
     def precedence
-    Translator::PRECEDENCE[:bitOR]
-  end
+        Translator::PRECEDENCE[:bitOR]
+    end
 end
 
 class BitwiseXor < BitwiseNode
@@ -32,22 +41,31 @@ class BitwiseXor < BitwiseNode
     end
 
     def precedence
-    Translator::PRECEDENCE[:bitXOR]
-  end
+        Translator::PRECEDENCE[:bitXOR]
+    end
 end
 
 class BitwiseNot
-    attr_reader :operand
-    def initialize(operand)
+    attr_reader :operand, :indices
+    def initialize(operand, indices)
         @operand = operand
+        @indices = indices
     end
     def visit(visitor)
         visitor.visit_bitwise_not(self)
     end
 
+    def start_index
+        @indices[0]  
+    end
+
+    def end_index
+        @indices[1]  
+    end
+
     def precedence
-    Translator::PRECEDENCE[:bitNOT]
-  end
+        Translator::PRECEDENCE[:bitNOT]
+    end
 end
 
 class BitwiseLeftShift < BitwiseNode
@@ -56,8 +74,8 @@ class BitwiseLeftShift < BitwiseNode
     end
 
     def precedence
-    Translator::PRECEDENCE[:leftShift]
-  end
+        Translator::PRECEDENCE[:leftShift]
+    end
 end
 
 class BitwiseRightShift < BitwiseNode
@@ -66,6 +84,6 @@ class BitwiseRightShift < BitwiseNode
     end
 
     def precedence
-    Translator::PRECEDENCE[:rightShift]
-  end
+        Translator::PRECEDENCE[:rightShift]
+    end
 end

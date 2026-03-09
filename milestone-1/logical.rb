@@ -1,8 +1,17 @@
 class LogicalNode
-    attr_reader :left, :right
-    def initialize(left, right)
+    attr_reader :left, :right, :indices
+    def initialize(left, right, indices)
         @left = left
         @right = right
+        @indices = indices
+    end
+
+    def start_index
+        @indices[0]
+    end
+
+    def end_index
+        @indices[1]
     end
 end
 
@@ -27,14 +36,16 @@ end
 
 class Not < LogicalNode
     attr_reader :operand
-    def initialize(operand)
+    def initialize(operand, indices)
         @operand = operand
+        @indices = indices
     end
+
     def visit(visitor)
         visitor.visit_not(self)
     end
 
     def precedence
     Translator::PRECEDENCE[:logNOT]
-  end
+    end
 end

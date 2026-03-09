@@ -60,8 +60,14 @@ class Lexer
       text += advance
     end
 
-    # Check if this "name" is actually a keyword
-    type = (text == "print") ? :PRINT : :VARIABLE
+    # Explicitly check for booleans and null
+    case text
+    when "print" then type = :PRINT
+    when "true", "false" then type = :BOOLEAN
+    when "null" then type = :NULL
+    else type = :VARIABLE
+    end
+
     Token.new(type, text, start, @cursor - 1)
   end
 

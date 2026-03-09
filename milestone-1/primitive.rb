@@ -1,7 +1,16 @@
 class PrimitiveNode
-    attr_reader :value
-    def initialize(value)
+    attr_reader :value, :indices
+    def initialize(value, indices)
     @value = value
+    @indices = indices
+    end
+
+    def start_index
+      @indices[0]
+    end
+
+    def end_index
+      @indices[1]
     end
 end
 
@@ -46,10 +55,11 @@ class StringPrimitive < PrimitiveNode
 end
 
 class NullPrimitive < PrimitiveNode
-    def initialize
+    def initialize(indices = [0, 0])
         @value = nil
+        @indices = indices
     end
-    
+
     def visit(visitor)
         visitor.visit_null_primitive(self)
     end
