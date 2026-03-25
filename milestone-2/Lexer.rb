@@ -87,28 +87,25 @@ class Lexer
   # 3. Strings
   def lex_string
     start = @cursor
-    advance # consume the opening "
+    advance
     text = ""
     while @cursor < @source.length && peek != '"'
       text += advance
     end
-    advance # consume the closing "
+    advance
     Token.new(:STRING_LITERAL, text, start, @cursor - 1)
   end
 
-  # 4. Operators (The "Lookahead" logic)
   def lex_operator
     start = @cursor
-  char = advance # Grab the 1st char and move past it
+  char = advance
   
-  # Look ahead: "If I add the next char to this one, is it in the Double Bucket?"
   combined = char + (peek || "")
 
   if TWO_CHAR_TYPES.key?(combined)
-    advance # Now we actually consume that 2nd char we peeked at
+    advance
     Token.new(TWO_CHAR_TYPES[combined], combined, start, @cursor - 1)
   elsif ONE_CHAR_TYPES.key?(char)
-    # If it wasn't a double, just check the Single Bucket
     Token.new(ONE_CHAR_TYPES[char], char, start, @cursor - 1)
   else
     Token.new(:UNKNOWN, char, start, @cursor - 1)
