@@ -9,6 +9,6 @@ class Token
     end
 
     def to_string
-        "Token(#{@type}, '#{@text}', #{@start_index}..#{end_index})"
+        "Token(#{@type}, '#{@text}', #{@start_index}..#{@end_index})"
     end
 end

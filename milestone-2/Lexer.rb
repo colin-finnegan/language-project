@@ -1,4 +1,17 @@
 class Lexer
+    TWO_CHAR_TYPES = {
+    "==" => :EQUAL,  "!=" => :NOT_EQUAL, "<=" => :LTE,   ">=" => :GTE,
+    "&&" => :AND,    "||" => :OR,        "**" => :POWER, 
+    "<<" => :LSHIFT, ">>" => :RSHIFT
+    }
+
+    ONE_CHAR_TYPES = {
+    "+" => :PLUS,     "-" => :MINUS,    "*" => :MULTIPLY, "/" => :DIVIDE,
+    "%" => :MODULO,   "=" => :ASSIGN,   "<" => :LT,       ">" => :GT,
+    "!" => :NOT,      "(" => :LPAREN,   ")" => :RPAREN,   "&" => :BIT_AND,
+    "|" => :BIT_OR,   "^" => :BIT_XOR,  "~" => :BIT_NOT
+    }
+    
     def initialize(source)
         @source = source
         @cursor = 0
@@ -86,30 +99,19 @@ class Lexer
   # 4. Operators (The "Lookahead" logic)
   def lex_operator
     start = @cursor
-    char = advance
-    
-    # Check for 2-character operators
-    two_char_ops = ["==", "!=", "<=", ">=", "&&", "||", "**", "<<", ">>"]
-    combined = char + (peek || "")
+  char = advance # Grab the 1st char and move past it
+  
+  # Look ahead: "If I add the next char to this one, is it in the Double Bucket?"
+  combined = char + (peek || "")
 
-    if two_char_ops.include?(combined)
-      advance # consume the 2nd char
-      Token.new(get_type(combined), combined, start, @cursor - 1)
-    else
-      Token.new(get_type(char), char, start, @cursor - 1)
-    end
-  end
-
-  def get_type(op)
-    types = {
-      "+" => :PLUS, "-" => :MINUS, "*" => :MULTIPLY, "/" => :DIVIDE,
-      "%" => :MODULO, "=" => :ASSIGN, "==" => :EQUAL, "!=" => :NOT_EQUAL,
-      "<" => :LT, ">" => :GT, "<=" => :LTE, ">=" => :GTE,
-      "&&" => :AND, "||" => :OR, "!" => :NOT, "**" => :POWER,
-      "(" => :LPAREN, ")" => :RPAREN, "&" => :BIT_AND, "|" => :BIT_OR,
-      "^" => :BIT_XOR, "~" => :BIT_NOT, "<<" => :LSHIFT, ">>" => :RSHIFT
-    }
-    types[op] || :UNKNOWN
+  if TWO_CHAR_TYPES.key?(combined)
+    advance # Now we actually consume that 2nd char we peeked at
+    Token.new(TWO_CHAR_TYPES[combined], combined, start, @cursor - 1)
+  elsif ONE_CHAR_TYPES.key?(char)
+    # If it wasn't a double, just check the Single Bucket
+    Token.new(ONE_CHAR_TYPES[char], char, start, @cursor - 1)
+  else
+    Token.new(:UNKNOWN, char, start, @cursor - 1)
   end
 
 end

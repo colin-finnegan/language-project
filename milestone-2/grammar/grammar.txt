@@ -1,61 +1,67 @@
 program = block
 
-block = statement*
+block = statement block
+      |
 
 statement = print
-          | assignment
-          | expression
+          | level1
 
-print = "print" expression
+print = "print" level1
 
-expression = assignment
+// Assignment
+level1 = VARIABLE "=" level1
+           | level2
 
-assignment = VARIABLE "=" assignment
-           | logicalor
+// Logical OR
+level2 = level2 "||" level3
+           | level3
 
-logicalor = logicalor "||" logicaland
-           | logicaland
+// Logical AND
+level3 = level3 "&&" level4
+            | level4
 
-logicaland = logicaland "&&" relational
-            | relational
-        
-relational = relational "==" additive
-           | relational "!=" additive
-           | relational "<"  additive
-           | relational ">"  additive
-           | relational "<=" additive
-           | relational ">=" additive
-           | additive
+// Relational    
+level4 = level4 "==" level5
+           | level4 "!=" level5
+           | level4 "<"  level5
+           | level4 ">"  level5
+           | level4 "<=" level5
+           | level4 ">=" level5
+           | level5
 
-additive = additive "+" multiplicative
-         | additive "-" multiplicative
-         | multiplicative
+// Additive (+ -)
+level5 = level5 "+" level6
+         | level5 "-" level6
+         | level6
 
-multiplicative = multiplicative "*" power
-               | multiplicative "/" power
-               | multiplicative "%" power
-               | multiplicative "&" power
-               | multiplicative "|" power
-               | multiplicative "^" power
-               | multiplicative "<<" power
-               | multiplicative ">>" power
-               | power
+// Multiplicative (* / % & | ^ << >>)
+level6 = level6 "*" level7
+               | level6 "/" level7
+               | level6 "%" level7
+               | level6 "&" level7
+               | level6 "|" level7
+               | level6 "^" level7
+               | level6 "<<" level7
+               | level6 ">>" level7
+               | level7
 
-power = unary "**" power
-      | unary
+// Power (**)
+level7 = level8 "**" level7
+      | level8
 
-unary = "!" unary
-      | "-" unary
-      | "~" unary
+// Unary
+level8 = "!" level8
+      | "-" level8
+      | "~" level8
       | casting
       | primary
 
-casting = "floattoint" "(" expression ")"
-        | "inttofloat" "(" expression ")"
+casting = "floattoint" "(" level1 ")"
+        | "inttofloat" "(" level1 ")"
 
 primary = INTEGER
         | FLOAT
         | STRING
         | BOOLEAN
         | VARIABLE
-        | "(" expression ")"
+        | "(" level1 ")"
