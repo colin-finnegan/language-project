@@ -37,10 +37,16 @@ class Parser
   end
 
   def consume(type, message)
+    if at_end?
+    # Report error at the end of the last known token
+    last_pos = @tokens.last ? @tokens.last.end_index : 0
+    raise "#{message} (Reached end of input at index #{last_pos})"
+    end
+    
     if has(type)
-      return advance
+      advance
     else
-      raise "#{message} at index #{peek&.start_index}"
+      raise "#{message} at index #{peek.start_index}"
     end
   end
 
@@ -126,6 +132,30 @@ class Parser
     left
   end
 
+  # Binary Mapping (used in relational, additive, multiplicative)
+  BINARY_MAP = {
+    EQUAL: Equals, NOT_EQUAL: NotEquals, LT: LessThan, 
+    GT: GreaterThan, LTE: LessThanEqual, GTE: GreaterThanEqual,
+    PLUS: Add, MINUS: Subtract,
+    MULTIPLY: Multiply, DIVIDE: Divide, MODULO: Modulo,
+    BIT_AND: BitwiseAnd, BIT_OR: BitwiseOr, BIT_XOR: BitwiseXor,
+    LSHIFT: BitwiseLeftShift, RSHIFT: BitwiseRightShift
+  }
+
+  # Unary Mapping (used in parse_unary)
+  UNARY_MAP = {
+    NOT: Not, 
+    MINUS: UnaryNegation, 
+    BIT_NOT: BitwiseNot
+  }
+
+  # Literal Mapping (used in parse_primary)
+  LITERAL_MAP = {
+    INTEGER_LITERAL: IntegerPrimitive, FLOAT_LITERAL: FloatPrimitive,
+    STRING_LITERAL: StringPrimitive, BOOLEAN: BooleanPrimitive,
+    VARIABLE: Variable, NULL: NullPrimitive
+  }
+
   # relational = relational "==" additive
   #            | relational "!=" additive
   #            | relational "<"  additive
@@ -135,18 +165,12 @@ class Parser
   #            | additive
   def parse_relational
     left = parse_additive
-    if has(:EQUAL) || has(:NOT_EQUAL) || has(:LT) || has(:GT) || has(:LTE) || has(:GTE)
+    #(klass = NODE_MAP[peek&.type]) && (has(:EQUAL) || has(:NOT_EQUAL) || has(:LT) || has(:GT) || has(:LTE) || has(:GTE))
+    if (klass = BINARY_MAP[peek&.type]) && [:EQUAL, :NOT_EQUAL, :LT, :GT, :LTE, :GTE].include?(peek.type)
       token = advance
       right = parse_additive
-      
-      case token.type
-      when :EQUAL then left = Equals.new(left, right, [left.start_index, right.end_index])
-      when :NOT_EQUAL then left = NotEquals.new(left, right, [left.start_index, right.end_index])
-      when :LT then left = LessThan.new(left, right, [left.start_index, right.end_index])
-      when :GT then left = GreaterThan.new(left, right, [left.start_index, right.end_index])
-      when :LTE then left = LessThanEqual.new(left, right, [left.start_index, right.end_index])
-      when :GTE then left = GreaterThanEqual.new(left, right, [left.start_index, right.end_index])
-      end
+      left = klass.new(left, right, [left.start_index, right.end_index])
+
     end
     left
   end
@@ -154,11 +178,10 @@ class Parser
   # additive = additive "+" multiplicative| additive "-" multiplicative | multiplicative
   def parse_additive
     left = parse_multiplicative
-    while has(:PLUS) || has(:MINUS)
+    while (klass = BINARY_MAP[peek&.type]) && [:PLUS, :MINUS].include?(peek.type)
       token = advance
       right = parse_multiplicative
-      if token.type == :PLUS; left = Add.new(left, right, [left.start_index, right.end_index])
-      elsif token.type == :MINUS; left = Subtract.new(left, right, [left.start_index, right.end_index]) end
+      left = klass.new(left, right, [left.start_index, right.end_index])
     end
     left
   end
@@ -174,22 +197,14 @@ class Parser
   #                | power
   def parse_multiplicative
     left = parse_power
-    while has(:MULTIPLY) || has(:DIVIDE) || has(:MODULO) || has(:BIT_AND) || 
-      has(:BIT_OR) || has(:BIT_XOR) || has(:LSHIFT) || has(:RSHIFT)
+    while (klass = BINARY_MAP[peek&.type]) && [:MULTIPLY, :DIVIDE, :MODULO, :BIT_AND, :BIT_OR, :BIT_XOR, :LSHIFT, :RSHIFT].include?(peek.type)
+      #has(:MULTIPLY) || has(:DIVIDE) || has(:MODULO) || has(:BIT_AND) || 
+      #has(:BIT_OR) || has(:BIT_XOR) || has(:LSHIFT) || has(:RSHIFT)
 
       token = advance
       right = parse_power
+      left = klass.new(left, right, [left.start_index, right.end_index])
 
-      case token.type # try to change... lots of LOC?? IDKKKKKK
-      when :MULTIPLY then left = Multiply.new(left, right, [left.start_index, right.end_index])
-      when :DIVIDE then left = Divide.new(left, right, [left.start_index, right.end_index])
-      when :MODULO then left = Modulo.new(left, right, [left.start_index, right.end_index])
-      when :BIT_AND then left = BitwiseAnd.new(left, right, [left.start_index, right.end_index])
-      when :BIT_OR then left = BitwiseOr.new(left, right, [left.start_index, right.end_index])
-      when :BIT_XOR then left = BitwiseXor.new(left, right, [left.start_index, right.end_index])
-      when :LSHIFT then left = BitwiseLeftShift.new(left, right, [left.start_index, right.end_index])
-      when :RSHIFT then left = BitwiseRightShift.new(left, right, [left.start_index, right.end_index])
-      end
     end
     left
   end
@@ -207,19 +222,11 @@ class Parser
 
   # unary = "!" unary | "-" unary | "~" unary | casting | primary
   def parse_unary
-    if has(:NOT)
+    if (klass = UNARY_MAP[peek&.type]) && [:MINUS, :NOT, :BIT_NOT].include?(peek.type)
       token = advance
       operand = parse_unary # !!!true
-      return Not.new(operand, [token.start_index, operand.end_index])
-    elsif has(:MINUS)
-      token = advance
-      operand = parse_unary
-      return UnaryNegation.new(operand, [token.start_index, operand.end_index])
-    elsif has(:BIT_NOT)
-      token = advance
-      operand = parse_unary
-      return BitwiseNot.new(operand, [token.start_index, operand.end_index])
-    elsif has(:VARIABLE) && (peek.text == "floattoint" || peek.text == "inttofloat")
+      return klass.new(operand, [token.start_index, operand.end_index])
+    elsif has(:VARIABLE) && ["floattoint", "inttofloat"].include?(peek.text)
       return parse_casting
     else
       parse_primary
@@ -233,25 +240,30 @@ class Parser
     exp = parse_expression
     end_token = consume(:RPAREN, "Expected ')' after casting operator")
 
-    if name_token.text == "floattoint"; FloatToInt.new(exp, [name_token.start_index, end_token.end_index]) end
-    if name_token.text == "inttofloat"; IntToFloat.new(exp, [name_token.start_index, end_token.end_index]) end
+    if name_token.text == "floattoint"; FloatToInt.new(exp, [name_token.start_index, end_token.end_index])
+    elsif name_token.text == "inttofloat"; IntToFloat.new(exp, [name_token.start_index, end_token.end_index]) end
   end
 
   # primary = INTEGER | FLOAT | STRING | BOOLEAN | VARIABLE | "(" expression ")"
   def parse_primary
     token = advance
-    case token.type
-    when :INTEGER_LITERAL then IntegerPrimitive.new(token.text.to_i, [token.start_index, token.end_index])
-    when :FLOAT_LITERAL then FloatPrimitive.new(token.text.to_f, [token.start_index, token.end_index])
-    when :STRING_LITERAL then StringPrimitive.new(token.text, [token.start_index, token.end_index])
-    when :BOOLEAN then BooleanPrimitive.new(token.text == "true", [token.start_index, token.end_index])
-    when :VARIABLE then Variable.new(token.text, [token.start_index, token.end_index])
-    when :NULL then NullPrimitive.new([token.start_index, token.end_index])
-    when :LPAREN
+    klass = LITERAL_MAP[token.type]
+
+    if klass
+      # Handle specific literal conversions
+      case token.type
+      when :INTEGER_LITERAL then klass.new(token.text.to_i, [token.start_index, token.end_index])
+      when :FLOAT_LITERAL   then klass.new(token.text.to_f, [token.start_index, token.end_index])
+      when :BOOLEAN         then klass.new(token.text == "true", [token.start_index, token.end_index])
+      when :NULL            then klass.new([token.start_index, token.end_index])
+      else                       klass.new(token.text, [token.start_index, token.end_index])
+      end
+    elsif token.type == :LPAREN
       exp = parse_expression
       consume(:RPAREN, "Expected ')'")
       exp
-    else raise "Unexpected token #{token.type} at #{token.start_index}"
+    else
+      raise "Unexpected token #{token.type} at #{token.start_index}"
     end
   end
 
