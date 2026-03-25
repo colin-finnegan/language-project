@@ -170,15 +170,7 @@ class Parser
       token = advance
       right = parse_additive
       left = klass.new(left, right, [left.start_index, right.end_index])
-      
-      #case token.type
-      #when :EQUAL then left = Equals.new(left, right, [left.start_index, right.end_index])
-      #when :NOT_EQUAL then left = NotEquals.new(left, right, [left.start_index, right.end_index])
-      #when :LT then left = LessThan.new(left, right, [left.start_index, right.end_index])
-      #when :GT then left = GreaterThan.new(left, right, [left.start_index, right.end_index])
-      #when :LTE then left = LessThanEqual.new(left, right, [left.start_index, right.end_index])
-      #when :GTE then left = GreaterThanEqual.new(left, right, [left.start_index, right.end_index])
-      #end
+
     end
     left
   end
@@ -213,15 +205,6 @@ class Parser
       right = parse_power
       left = klass.new(left, right, [left.start_index, right.end_index])
 
-      #case token.type # try to change... lots of LOC?? IDKKKKKK
-      #when :MULTIPLY then left = Multiply.new(left, right, [left.start_index, right.end_index])
-      #when :DIVIDE then left = Divide.new(left, right, [left.start_index, right.end_index])
-      #when :MODULO then left = Modulo.new(left, right, [left.start_index, right.end_index])
-      #when :BIT_AND then left = BitwiseAnd.new(left, right, [left.start_index, right.end_index])
-      #when :BIT_OR then left = BitwiseOr.new(left, right, [left.start_index, right.end_index])
-      #when :LSHIFT then left = BitwiseLeftShift.new(left, right, [left.start_index, right.end_index])
-      #when :RSHIFT then left = BitwiseRightShift.new(left, right, [left.start_index, right.end_index])
-      #end
     end
     left
   end
