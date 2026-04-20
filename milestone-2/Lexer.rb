@@ -1,3 +1,5 @@
+require_relative 'token'
+
 class Lexer
     TWO_CHAR_TYPES = {
     "==" => :EQUAL,  "!=" => :NOT_EQUAL, "<=" => :LTE,   ">=" => :GTE,
@@ -110,5 +112,6 @@ class Lexer
   else
     Token.new(:UNKNOWN, char, start, @cursor - 1)
   end
+end
 
 end

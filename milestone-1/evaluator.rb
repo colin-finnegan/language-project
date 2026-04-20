@@ -381,9 +381,9 @@ class Evaluator
     def visit_print(node)
         print_statement = node.operand.visit(self)
         if is_null?(print_statement)
-            puts "null"
+            @runtime.log_print("null")
         else
-            puts print_statement.value
+            @runtime.log_print(print_statement.value)
         end
 
         return NullPrimitive.new(node.indices)
