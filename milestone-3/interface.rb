@@ -4,6 +4,15 @@ require_relative '../milestone-2/lexer'
 require_relative '../milestone-2/parser'
 require_relative '../milestone-1/evaluator'
 
+# Constants
+KEY_CTRL_R    = 18
+KEY_TAB       = 9
+KEY_ENTER     = 10
+KEY_RETURN    = 13
+KEY_ESC       = 27
+KEY_BACKSPACE = 127
+KEY_DELETE    = Curses::Key::BACKSPACE
+
 class VariableTracker
   attr_reader :output
   def initialize(variables = {})
@@ -23,6 +32,16 @@ class VariableTracker
   end
 end
 
+def cast_value(val)
+  return true if val.downcase == 'true'
+  return false if val.downcase == 'false'
+  if val.include?('.')
+    begin return Float(val); rescue; end
+  end
+  begin return Integer(val); rescue; end
+  val # Default to String
+end
+
 def run_engine(source, raw_env)
   return { val: "", out: "" } if source.nil? || source.strip.empty?
   
@@ -34,27 +53,29 @@ def run_engine(source, raw_env)
 
   # Loop thru table values, convert string to int, wrap in int prim for evaluator
   raw_env.each do |name, value|
-    
-    formatted_env[name.to_s] = IntegerPrimitive.new(value.to_i, [0,0])
+    typed_val = cast_value(value)
+    node_class = case typed_val
+                 when Integer then IntegerPrimitive
+                 when Float   then FloatPrimitive
+                 when true, false then BooleanPrimitive
+                 when nil     then NullPrimitive
+                 else StringPrimitive
+                 end
+
+    if node_class == NullPrimitive
+      formatted_env[name.to_s] = node_class.new([0, 0])
+    else
+      formatted_env[name.to_s] = node_class.new(typed_val, [0, 0])
+    end
   end 
 
   runtime = VariableTracker.new(formatted_env)
   evaluator = Evaluator.new(runtime)
   result_node = ast.visit(evaluator)
 
-  # Check if result node has a value 
-  if result_node && result_node.respond_to?(:value)
-    final_val = result_node.value.to_s
-  else
-    final_val = "null"
-  end
+  final_val = (result_node && result_node.respond_to?(:value)) ? result_node.value.to_s : "null"
 
-  # Combine the result and the collected output into a hash for the UI
-  { 
-    val: final_val,
-    out: runtime.output.join(", ") 
-  }
-
+  { val: final_val, out: runtime.output.join(", ") }
   # Displays error message in output window instead of crashing program
   rescue => e
     { val: "Error", out: e.message }
@@ -64,35 +85,51 @@ end
 def main
   textfile = ARGV[0] || (puts "Usage: ruby interface.rb add.txt"; exit)
   lines = File.readlines(textfile)
-  param_line = lines[0].strip
-  labels = ["a", "b"]
+  
+  #mHandle variable number of arguments
+  labels = lines[0].strip.split(/\s+|,/) 
   secret_code = lines[1..-1].join
 
   Curses.init_screen
+  # Get terminal dimensions
+  rows = Curses.lines
+  cols = Curses.cols
+
+  # Layout needs at least 30 rows and 80 columns
+  if rows < 30 || cols < 80
+    Curses.close_screen
+    puts "Terminal too small! Current: #{rows}x#{cols}. Need at least 30x80."
+    exit
+  end 
   Curses.noecho
   Curses.stdscr.keypad(true)
   
   begin
-    # Window setup to fit your requirements
-    table_win  = Curses::Window.new(8, 70, 0, 0)
-    editor_win = Curses::Window.new(10, 70, 8, 0)
-    output_win = Curses::Window.new(5, 70, 18, 0)
-    input_win  = Curses::Window.new(3, 70, 23, 0)
+    # Adjusted Heights for larger output space
+    table_win  = Curses::Window.new(9, 80, 0, 0)
+    editor_win = Curses::Window.new(10, 80, 9, 0)
+    output_win = Curses::Window.new(8, 80, 19, 0)
+    input_win  = Curses::Window.new(3, 80, 27, 0)
 
     test_cases = []
     user_code = ""
-    last_output = ""
+    all_history = []
 
     loop do
       # Draw Table
       table_win.clear
       table_win.box("|", "-")
       table_win.setpos(1, 2)
-      table_win.addstr(labels.join(' | ') + " | Expected | Actual")
+      
+      # Align headers and rows
+      col_width = 8
+      header_str = labels.map { |l| l.ljust(col_width) }.join(" | ")
+      table_win.addstr("#{header_str} | #{"Expected".ljust(col_width)} | #{"Actual".ljust(col_width)}")
+      
       test_cases.each_with_index do |t, i|
         table_win.setpos(2 + i, 2)
-        row = labels.map { |l| t[l] }.join(' | ')
-        table_win.addstr("#{row} | #{t['exp']} | #{t['act']}")
+        row_vals = labels.map { |l| t[l].to_s.ljust(col_width) }.join(" | ")
+        table_win.addstr("#{row_vals} | #{t['exp'].to_s.ljust(col_width)} | #{t['act'].to_s.ljust(col_width)}")
       end
       table_win.refresh
 
@@ -110,50 +147,56 @@ def main
       output_win.clear
       output_win.box("|", "-")
       output_win.setpos(0, 2)
-      output_win.addstr(" Program Output / Errors ")
-      output_win.setpos(2, 2)
-      output_win.addstr(last_output[0..65])
+      output_win.addstr(" Program Output History ")
+      # Put outputs on their own lines
+      all_history.last(6).each_with_index do |msg, i|
+        output_win.setpos(i + 1, 2)
+        output_win.addstr(msg[0..75])
+      end
       output_win.refresh
 
       # Input Logic
       c = editor_win.getch
       case c
-      when 27, 3 then break
-      when 9 # TAB: Add Row
+      when KEY_ESC, 3 then break
+      when KEY_TAB
         new_row = {}
         labels.each do |l|
-          input_win.clear
-          input_win.box("|", "-"); input_win.setpos(1, 2)
+          input_win.clear; input_win.box("|", "-"); input_win.setpos(1, 2)
           input_win.addstr("Value for #{l}: ")
           input_win.refresh
           Curses.echo
           new_row[l] = input_win.getstr
           Curses.noecho
         end
-        # Auto-fill Expected
+        
+        # Manage case overflow (Limit to 5 cases)
+        test_cases.shift if test_cases.size >= 5
+        
         res = run_engine(secret_code, new_row)
         new_row['exp'] = res[:val]
         new_row['act'] = "?"
         test_cases << new_row
-        input_win.clear
-        input_win.refresh
-      when 18 # CTRL+R: Run
-        all_outputs = [] # Clear outputs for the new run
+        input_win.clear; input_win.refresh
+        
+      when KEY_CTRL_R
+        all_history.clear # Clear for fresh run
         test_cases.each do |t|
           vars = t.select { |k| labels.include?(k) }
           res = run_engine(user_code, vars)
           t['act'] = res[:val]
           
-          # Collect the output for this specific case
-          case_out = res[:out].empty? ? res[:val] : res[:out]
-          case_out = "Error: #{res[:out]}" if res[:val] == "Error"
-          all_outputs << "[Case #{t.values_at(*labels).join(',')}]: #{case_out}"
+          display_val = res[:val] == "Error" ? "Error: #{res[:out]}" : res[:val]
+          all_history << "[Case #{vars.values.join(',')}]: #{display_val}"
         end
-        last_output = all_outputs.join(" | ") # Show all results in the panel
-      when 127, Curses::Key::BACKSPACE then user_code.chop!
-      when 10, 13 then user_code += "\n"
-      when String then user_code += c
-      when Integer then user_code += c.chr if c.between?(32, 126)
+      when KEY_BACKSPACE, 127, 8 # Handle Backspace
+        user_code.chop!
+      when KEY_ENTER, KEY_RETURN
+        user_code += "\n"
+      when String
+        user_code += c
+      when Integer
+        user_code += c.chr if c.between?(32, 126)
       end
     end
   ensure
