@@ -128,9 +128,13 @@ def main
       table_win.setpos(1, 2)
       
       # Align headers and rows
-      col_width = 10
+      total_cols = labels.size + 2
+      col_width = (75 / total_cols) - 3
+      col_width = 6 if col_width < 6
       header_str = labels.map { |l| l.ljust(col_width) }.join(" | ")
-      table_win.addstr("#{header_str} | #{"Expected".ljust(col_width)} | #{"Actual".ljust(col_width)}")
+      exp_header = "Exp".ljust(col_width)
+      act_header = "Act".ljust(col_width)
+      table_win.addstr("#{header_str} | #{exp_header} | #{act_header}")
       
       test_cases.each_with_index do |t, i|
         table_win.setpos(2 + i, 2)

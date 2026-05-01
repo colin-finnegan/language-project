@@ -1,2 +1,2 @@
-a b c d e
-((a + b) * c) / d ^ e
+amazon bill chicken ditto elmo
+((amazon + bill) * chicken) / ditto ^ elmo

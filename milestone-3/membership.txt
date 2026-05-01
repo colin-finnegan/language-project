@@ -1,2 +1,2 @@
-user_id score
-user_id + score
+user_score bonus_multiplier
+(user_score * bonus_multiplier) + 10
