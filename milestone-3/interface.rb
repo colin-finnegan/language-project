@@ -42,7 +42,7 @@ def cast_value(val)
   val # Default to String
 end
 
-def run_engine(source, raw_env)
+def run_engine(source, raw_env, og_labels = [])
   return { val: "", out: "" } if source.nil? || source.strip.empty?
   
   tokens = Lexer.new(source).tokenize
@@ -52,7 +52,7 @@ def run_engine(source, raw_env)
   formatted_env = {}
 
   # Loop thru table values, convert string to int, wrap in int prim for evaluator
-  raw_env.each do |name, value|
+  raw_env.each_with_index do |(name, value), i|
     typed_val = cast_value(value)
     node_class = case typed_val
                  when Integer then IntegerPrimitive
@@ -62,10 +62,15 @@ def run_engine(source, raw_env)
                  else StringPrimitive
                  end
 
-    if node_class == NullPrimitive
-      formatted_env[name.to_s] = node_class.new([0, 0])
-    else
-      formatted_env[name.to_s] = node_class.new(typed_val, [0, 0])
+    node = if node_class == NullPrimitive
+             node_class.new([0, 0])
+           else
+             node_class.new(typed_val, [0, 0])
+           end
+    formatted_env[name.to_s] = node
+
+    if og_labels && og_labels[i]
+      formatted_env[og_labels[i].to_s] = node
     end
   end 
 
@@ -86,8 +91,9 @@ def main
   textfile = ARGV[0] || (puts "Usage: ruby interface.rb add.txt"; exit)
   lines = File.readlines(textfile)
   
-  #mHandle variable number of arguments
-  labels = lines[0].strip.split(/\s+|,/) 
+  #Handle variable number of arguments
+  file_args = lines[0].strip.split(/\s+|,/) 
+  labels = file_args.each_with_index.map { |_, i| (97 + i).chr }
   secret_code = lines[1..-1].join
 
   Curses.init_screen
@@ -122,14 +128,24 @@ def main
       table_win.setpos(1, 2)
       
       # Align headers and rows
-      col_width = 8
+      col_width = 10
       header_str = labels.map { |l| l.ljust(col_width) }.join(" | ")
       table_win.addstr("#{header_str} | #{"Expected".ljust(col_width)} | #{"Actual".ljust(col_width)}")
       
       test_cases.each_with_index do |t, i|
         table_win.setpos(2 + i, 2)
-        row_vals = labels.map { |l| t[l].to_s.ljust(col_width) }.join(" | ")
-        table_win.addstr("#{row_vals} | #{t['exp'].to_s.ljust(col_width)} | #{t['act'].to_s.ljust(col_width)}")
+        # 1. Truncate Row Inputs
+        row_vals = labels.map do |l| 
+          t[l].to_s[0...col_width-1].ljust(col_width) 
+        end.join(" | ")
+        
+        # 2. Truncate Expected Result
+        exp_display = t['exp'].to_s[0...col_width-1].ljust(col_width)
+        
+        # 3. Truncate Actual Result
+        act_display = t['act'].to_s[0...col_width-1].ljust(col_width)
+        
+        table_win.addstr("#{row_vals} | #{exp_display} | #{act_display}")
       end
       table_win.refresh
 
@@ -173,7 +189,7 @@ def main
         # Manage case overflow (Limit to 5 cases)
         test_cases.shift if test_cases.size >= 5
         
-        res = run_engine(secret_code, new_row)
+        res = run_engine(secret_code, new_row, file_args)
         new_row['exp'] = res[:val]
         new_row['act'] = "?"
         test_cases << new_row
@@ -183,7 +199,7 @@ def main
         all_history.clear # Clear for fresh run
         test_cases.each do |t|
           vars = t.select { |k| labels.include?(k) }
-          res = run_engine(user_code, vars)
+          res = run_engine(user_code, vars, file_args)
           t['act'] = res[:val]
           
           display_val = res[:val] == "Error" ? "Error: #{res[:out]}" : res[:val]
