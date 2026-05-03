@@ -18,15 +18,21 @@ class VariableTracker
   def initialize(variables = {})
     @vars = variables
     @output = [] # Captures 'print' statements
+    @functions = {}
   end
-  def defin_function(name, node)
+
+  def define_function(name, node)
     @functions[name] = node
   end
-  def lookup(name)
-    #res = @vars[name.to_s] 
-    #raise "Undefined variable: #{name}" if res.nil?
-    #res
+
+  def lookup_function(name)
     @functions[name]
+  end
+  
+  def lookup(name)
+    res = @vars[name.to_s] 
+    raise "Undefined variable: #{name}" if res.nil?
+    res
   end
   def assign(name, value)
     @vars[name.to_s] = value
