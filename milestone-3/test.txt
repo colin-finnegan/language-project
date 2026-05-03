@@ -1,0 +1,6 @@
+x y
+if x > y
+  1
+else
+  0
+end

@@ -469,11 +469,11 @@ class Evaluator
 
     def visit_function_call(node)
         func_def = @runtime.lookup_function(node.name)
-        raise "Undefined Function '{node.name}'" unless func_def
+        raise "Undefined Function '#{node.name}'" unless func_def
         
         args = node.args.map { |arg| arg.visit(self) }
         if args.length != func_def.params.length
-            raise "Argument Error: '{node.name}'"  
+            raise "Argument Error: '#{node.name}'"  
         end
 
         # builds callees variable bindings
@@ -482,15 +482,22 @@ class Evaluator
             child_vars[param] = args[i]  
         end
 
-        child_runtime = Runtime.new(child_vars, @runtime.functions)
+        child_runtime = VariableTracker.new(child_vars, @runtime.functions)
         child_evaluator = Evaluator.new(child_runtime)
 
-        result = func_def.body.visit(child_evaluator)
-        result.is_a?(ReturnValue) ? result.value : NullPrimitive.new(node.indices)
-
-        def visit_return(node)
-            ReturnValue.new(node.expression.visit(self))
+        begin
+            # If the function body just finishes naturally, return its last value
+            return func_def.body.visit(child_evaluator)
+        rescue ReturnException => e
+            # This is the "teleportation" – catch the value thrown by 'return'
+            return e.value
         end
+
+    end
+
+    def visit_return(node)
+        val = node.expression.visit(self)
+        raise ReturnValue.new(node.expression.visit(self))
     end
 
     #type checking helpers
