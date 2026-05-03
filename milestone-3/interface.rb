@@ -93,7 +93,7 @@ def run_engine(source, raw_env, og_labels = [])
   { val: final_val, out: runtime.output.join(", ") }
   # Displays error message in output window instead of crashing program
   rescue => e
-    { val: "Error", out: e.message }
+    { val: "Error", out: "DEBUG: #{e.class} - #{e.message} in #{e.backtrace.first}" }
 end
 
 

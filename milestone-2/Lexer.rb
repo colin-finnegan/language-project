@@ -11,7 +11,7 @@ class Lexer
     "+" => :PLUS,     "-" => :MINUS,    "*" => :MULTIPLY, "/" => :DIVIDE,
     "%" => :MODULO,   "=" => :ASSIGN,   "<" => :LT,       ">" => :GT,
     "!" => :NOT,      "(" => :LPAREN,   ")" => :RPAREN,   "&" => :BIT_AND,
-    "|" => :BIT_OR,   "^" => :BIT_XOR,  "~" => :BIT_NO,
+    "|" => :BIT_OR,   "^" => :BIT_XOR,  "~" => :BIT_NOT,
     "[" => :LBRACKET, "]" => :RBRACKET, "," => :COMMA
     }
     
@@ -91,6 +91,7 @@ class Lexer
       when "in"            then :IN
       when "function"      then :FUNCTION
       when "return"        then :RETURN
+      when "then"          then :THEN
       else                      :VARIABLE
       end
 

@@ -1,4 +1,4 @@
-
+require_relative '../milestone-1/nodes'
 class Parser
   def initialize(tokens)
     @tokens = tokens
@@ -62,15 +62,15 @@ class Parser
   #block = statement*
   def parse_block
     statements = []
-    if !at_end?
-      start_index = peek.start_index
-    end
+    start_index = at_end? ? 0 : peek.start_index
 
-    while !at_end?
+    # STOP if hit the end of the file OR a "terminator" keyword
+    while !at_end? && ![:END, :ELSE].include?(peek.type)
       statements.push(parse_statement)
     end
-    end_index = statements.last ? statements.last.end_index : 0 # t then f
-    Block.new(statements, [start_index || 0, end_index])
+
+    end_index = statements.last ? statements.last.end_index : start_index
+    Block.new(statements, [start_index, end_index])
   end
 
   def parse_expression
@@ -99,6 +99,7 @@ class Parser
   def parse_conditional
     if_token = advance
     condition = parse_expression
+    consume(:THEN, "Expected 'then' after if condition") if has(:THEN)
     then_block = parse_block
     else_block = nil
     if has(:ELSE)
@@ -333,6 +334,10 @@ class Parser
 
   # primary = INTEGER | FLOAT | STRING | BOOLEAN | VARIABLE | "(" expression ")"
   def parse_primary
+    if has(:VARIABLE) && peek(1)&.type == :LPAREN
+      return parse_function_call
+    end
+    
     token = advance
     klass = LITERAL_MAP[token.type]
 
