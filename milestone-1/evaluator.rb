@@ -410,4 +410,123 @@ class Evaluator
 
         return last_result
     end
+
+    # Conditional
+    def visit_conditional(node)
+        condition = node.condition.visit(self)
+        assert_boolean(condition)
+
+        if condition.value
+            node.then_block.visit(self)
+        elsif node.else_block
+            node.else_block.visit(self)
+        else
+            NullPrimitive.new(node.indices)
+        end
+    end
+
+    #Loops
+    MAX_ITERATIONS = 1000000
+    def visit_while(node)
+        result = NullPrimitive.new(node.indices)
+        iteration = 0
+        
+        loop do
+            condition = node.condition.visit(self)
+            assert_boolean(condition)
+            break unless condition.value
+
+            iteration += 1
+            if iteration > MAX_ITERATIONS
+                raise "Runtime Error: Infinite loop."  
+            end
+            result = node.body.visit(self)
+        end
+        result
+    end
+
+    def visit_foreach(node)
+        start_val = node.start_expr.visit(self)
+        end_val = node.end_expr.visit(self)
+
+        assert_integer(start_val)
+        assert_integer(end_val)
+
+        result = NullPrimitive.new(node.indices)
+        (start_val.value..end_val.value).each do |i|
+            @runtime.assign(node.variable, IntegerPrimitive.new(i, node.indices)) 
+            result = node.body.visit(self) 
+        end
+        result
+    end
+
+    # Functions
+    # no execution yet, just dtoring function def in runtime
+    def visit_function_def(node)
+        @runtime.define_function(node.name, node)
+        NullPrimitive.new(node.indices)  
+    end
+
+    def visit_function_call(node)
+        func_def = @runtime.lookup_function(node.name)
+        raise "Undefined Function '{node.name}'" unless func_def
+        
+        args = node.args.map { |arg| arg.visit(self) }
+        if args.length != func_def.params.length
+            raise "Argument Error: '{node.name}'"  
+        end
+
+        # builds callees variable bindings
+        child_vars = {}
+        func_def.params.each_with_index do |param, i|
+            child_vars[param] = args[i]  
+        end
+
+        child_runtime = Runtime.new(child_vars, @runtime.functions)
+        child_evaluator = Evaluator.new(child_runtime)
+
+        result = func_def.body.visit(child_evaluator)
+        result.is_a?(ReturnValue) ? result.value : NullPrimitive.new(node.indices)
+
+        def visit_return(node)
+            ReturnValue.new(node.expression.visit(self))
+        end
+    end
+
+    #type checking helpers
+
+    def is_null?(node)
+        node.is_a?(NullPrimitive)
+    end
+    
+    def assert_numeric(node)
+        unless node.is_a?(IntegerPrimitive) || node.is_a?(FloatPrimitive)
+        raise "Type Error: Expected numeric operand, got #{node.class}"
+        end
+    end
+    
+    def assert_integer(node)
+        unless node.is_a?(IntegerPrimitive)
+        raise "Type Error: Expected integer operand, got #{node.class}"
+        end
+    end
+    
+    def assert_boolean(node)
+        unless node.is_a?(BooleanPrimitive)
+        raise "Type Error: Expected boolean operand, got #{node.class}"
+        end
+    end
+    
+    def wrap_numeric_result(left, right, raw_value)
+        indices = [left.start_index, right.end_index]
+        if left.is_a?(FloatPrimitive) || right.is_a?(FloatPrimitive)
+        FloatPrimitive.new(raw_value.to_f, indices)
+        else
+        IntegerPrimitive.new(raw_value.to_i, indices)
+        end
+    end
+    
+    def eval_pair(node)
+        [node.left.visit(self), node.right.visit(self)]
+    end
 end

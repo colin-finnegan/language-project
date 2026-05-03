@@ -11,7 +11,8 @@ class Lexer
     "+" => :PLUS,     "-" => :MINUS,    "*" => :MULTIPLY, "/" => :DIVIDE,
     "%" => :MODULO,   "=" => :ASSIGN,   "<" => :LT,       ">" => :GT,
     "!" => :NOT,      "(" => :LPAREN,   ")" => :RPAREN,   "&" => :BIT_AND,
-    "|" => :BIT_OR,   "^" => :BIT_XOR,  "~" => :BIT_NOT
+    "|" => :BIT_OR,   "^" => :BIT_XOR,  "~" => :BIT_NO,
+    "[" => :LBRACKET, "]" => :RBRACKET, "," => :COMMA
     }
     
     def initialize(source)
@@ -28,6 +29,8 @@ class Lexer
             case char
             when /[ \t\r\n]/
                 advance # Skip whitespace
+            when /\/\//
+                advance while @cursor < @source.length && peek != "\n"
             when /[0-9]/
                 tokens << lex_number
             when /[a-zA-Z_]/
@@ -76,12 +79,20 @@ class Lexer
     end
 
     # Explicitly check for booleans and null
-    case text
-    when "print" then type = :PRINT
-    when "true", "false" then type = :BOOLEAN
-    when "null" then type = :NULL
-    else type = :VARIABLE
-    end
+    type = case text
+      when "print"         then :PRINT
+      when "true", "false" then :BOOLEAN
+      when "null"          then :NULL
+      when "if"            then :IF
+      when "else"          then :ELSE
+      when "end"           then :END
+      when "while"         then :WHILE
+      when "for"           then :FOR
+      when "in"            then :IN
+      when "function"      then :FUNCTION
+      when "return"        then :RETURN
+      else                      :VARIABLE
+      end
 
     Token.new(type, text, start, @cursor - 1)
   end
@@ -100,18 +111,19 @@ class Lexer
 
   def lex_operator
     start = @cursor
-  char = advance
+    char = advance
   
-  combined = char + (peek || "")
+    combined = char + (peek || "")
 
-  if TWO_CHAR_TYPES.key?(combined)
-    advance
-    Token.new(TWO_CHAR_TYPES[combined], combined, start, @cursor - 1)
-  elsif ONE_CHAR_TYPES.key?(char)
-    Token.new(ONE_CHAR_TYPES[char], char, start, @cursor - 1)
-  else
-    Token.new(:UNKNOWN, char, start, @cursor - 1)
+    if TWO_CHAR_TYPES.key?(combined)
+      advance
+      Token.new(TWO_CHAR_TYPES[combined], combined, start, @cursor - 1)
+
+    elsif ONE_CHAR_TYPES.key?(char)
+      Token.new(ONE_CHAR_TYPES[char], char, start, @cursor - 1)
+
+    else
+      Token.new(:UNKNOWN, char, start, @cursor - 1)
+    end
   end
-end
-
 end
