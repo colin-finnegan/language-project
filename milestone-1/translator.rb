@@ -12,6 +12,11 @@
 class Translator
   PRECEDENCE = {
   block:          1,
+  conditional:    1,
+  while_loop:     1,
+  for_each:       1,
+  function_def:   1,
+  return_stmt:    1,
   print:          2,
   assignment:     3,
   logOR:          4,
@@ -39,6 +44,7 @@ class Translator
   int2Float:      18,
   float2Int:      18,
   rvalue:         19,
+  function_call:  19,
   integer:        20,
   float:          20,
   boolean:        20,
@@ -259,5 +265,45 @@ class Translator
     "float(#{node.operand.visit(self)})"
   end
 
+  # conditionals
+  def visit_conditional(node)
+    str = "if #{node.condition.visit(self)}:\n"
+    # Indent the then_block for readability
+    str += node.then_block.visit(self).split("\n").map{|l| "    " + l}.join("\n")
+    
+    if node.else_block
+      str += "\nelse:\n"
+      str += node.else_block.visit(self).split("\n").map{|l| "    " + l}.join("\n")
+    end
+    str
+  end
+
+  def visit_while_loop(node)
+    str = "while #{node.condition.visit(self)}:\n"
+    str += node.body.visit(self).split("\n").map{|l| "    " + l}.join("\n")
+    str
+  end
+
+  def visit_foreach(node)
+    str = "for #{node.variable} in range(#{node.start_expr.visit(self)}, #{node.end_expr.visit(self)}):\n"
+    str += node.body.visit(self).split("\n").map{|l| "    " + l}.join("\n")
+    str
+  end
+
+  def visit_function_def(node)
+    params = node.params.join(", ")
+    str = "def #{node.name}(#{params}):\n"
+    str += node.body.visit(self).split("\n").map{|l| "    " + l}.join("\n")
+    str
+  end
+
+  def visit_function_call(node)
+    args = node.args.map { |a| a.visit(self) }.join(", ")
+    "#{node.name}(#{args})"
+  end
+
+  def visit_return(node)
+    "return #{node.expression.visit(self)}"
+  end
 
 end

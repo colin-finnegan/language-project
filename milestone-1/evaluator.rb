@@ -417,9 +417,9 @@ class Evaluator
         assert_boolean(condition)
 
         if condition.value
-            node.then_block.visit(self)
+            return node.then_block.visit(self)
         elsif node.else_block
-            node.else_block.visit(self)
+            return node.else_block.visit(self)
         else
             NullPrimitive.new(node.indices)
         end
@@ -497,43 +497,6 @@ class Evaluator
 
     def visit_return(node)
         val = node.expression.visit(self)
-        raise ReturnValue.new(node.expression.visit(self))
-    end
-
-    #type checking helpers
-
-    def is_null?(node)
-        node.is_a?(NullPrimitive)
-    end
-    
-    def assert_numeric(node)
-        unless node.is_a?(IntegerPrimitive) || node.is_a?(FloatPrimitive)
-        raise "Type Error: Expected numeric operand, got #{node.class}"
-        end
-    end
-    
-    def assert_integer(node)
-        unless node.is_a?(IntegerPrimitive)
-        raise "Type Error: Expected integer operand, got #{node.class}"
-        end
-    end
-    
-    def assert_boolean(node)
-        unless node.is_a?(BooleanPrimitive)
-        raise "Type Error: Expected boolean operand, got #{node.class}"
-        end
-    end
-    
-    def wrap_numeric_result(left, right, raw_value)
-        indices = [left.start_index, right.end_index]
-        if left.is_a?(FloatPrimitive) || right.is_a?(FloatPrimitive)
-        FloatPrimitive.new(raw_value.to_f, indices)
-        else
-        IntegerPrimitive.new(raw_value.to_i, indices)
-        end
-    end
-    
-    def eval_pair(node)
-        [node.left.visit(self), node.right.visit(self)]
+        raise ReturnException.new(val)
     end
 end
