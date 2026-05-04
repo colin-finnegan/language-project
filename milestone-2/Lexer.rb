@@ -89,7 +89,7 @@ class Lexer
       when "while"         then :WHILE
       when "for"           then :FOR
       when "in"            then :IN
-      when "function"      then :FUNCTION
+      when "function", "def"      then :FUNCTION
       when "return"        then :RETURN
       when "then"          then :THEN
       else                      :VARIABLE
