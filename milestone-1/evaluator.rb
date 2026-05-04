@@ -379,15 +379,17 @@ class Evaluator
 
     # Print
     def visit_print(node)
+        # Evaluate the expression inside print
         print_statement = node.operand.visit(self)
-        if is_null?(print_statement)
-            @runtime.log_print("null")
-        else
-            @runtime.log_print(print_statement.value)
-        end
+  
+        # Get the raw Ruby value
+        raw_val = print_statement.value.to_s
+  
+        # Push it into the VariableTracker's @output array
+        @runtime.log_print(raw_val)
 
-        return NullPrimitive.new(node.indices)
-        #return print_statement
+        # Return the primitive so the "Act" column shows "eer" too
+        return print_statement
     end
 
     # Assignment
