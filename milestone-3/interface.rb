@@ -14,11 +14,11 @@ KEY_BACKSPACE = 127
 KEY_DELETE    = Curses::Key::BACKSPACE
 
 class VariableTracker
-  attr_reader :output
-  def initialize(variables = {})
+  attr_reader :output, :functions
+  def initialize(variables = {}, functions = {})
     @vars = variables
     @output = [] # Captures 'print' statements
-    @functions = {}
+    @functions = functions || {}
   end
 
   def define_function(name, node)
@@ -28,7 +28,7 @@ class VariableTracker
   def lookup_function(name)
     @functions[name]
   end
-  
+
   def lookup(name)
     res = @vars[name.to_s] 
     raise "Undefined variable: #{name}" if res.nil?
@@ -88,12 +88,23 @@ def run_engine(source, raw_env, og_labels = [])
   evaluator = Evaluator.new(runtime)
   result_node = ast.visit(evaluator)
 
-  final_val = (result_node && result_node.respond_to?(:value)) ? result_node.value.to_s : "null"
+  captured_output = runtime.output.join(", ")
 
-  { val: final_val, out: runtime.output.join(", ") }
+  # If program printed something, use it. else use return value.
+  final_val = if !captured_output.empty?
+                captured_output
+              elsif result_node && result_node.respond_to?(:value)
+                result_node.value.to_s
+              else
+                "" # return empty
+              end
+
+  { val: final_val, out: captured_output }
+  #{ val: final_val, out: runtime.output.join(", ") }
   # Displays error message in output window instead of crashing program
   rescue => e
-    { val: "Error", out: "DEBUG: #{e.class} - #{e.message} in #{e.backtrace.first}" }
+    #{ val: "Error", out: "DEBUG: #{e.class} - #{e.message} in #{e.backtrace.first}" }
+    { val: "Error", out: "#{e.class}: #{e.message}" }
 end
 
 
@@ -157,7 +168,8 @@ def main
         exp_display = t['exp'].to_s[0...col_width-1].ljust(col_width)
         
         # 3. Truncate Actual Result
-        act_display = t['act'].to_s[0...col_width-1].ljust(col_width)
+        #act_display = t['act'].to_s[0...col_width-1].ljust(col_width)
+        act_display = t['act'].to_s.slice(0, col_width).ljust(col_width)
         
         table_win.addstr("#{row_vals} | #{exp_display} | #{act_display}")
       end
@@ -181,7 +193,7 @@ def main
       # Put outputs on their own lines
       all_history.last(6).each_with_index do |msg, i|
         output_win.setpos(i + 1, 2)
-        output_win.addstr(msg[0..75])
+        output_win.addstr(msg[0..76])
       end
       output_win.refresh
 

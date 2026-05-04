@@ -1,0 +1,7 @@
+a b
+sum = 0
+for i in [a, b]
+  sum = sum + i
+end
+print sum
+    

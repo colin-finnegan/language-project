@@ -494,7 +494,8 @@ class Evaluator
             # This is the "teleportation" – catch the value thrown by 'return'
             return e.value
         end
-
+        
+        NullPrimitive.new(node.indices)
     end
 
     def visit_return(node)
