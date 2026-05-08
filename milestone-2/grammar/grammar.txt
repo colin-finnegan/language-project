@@ -4,7 +4,37 @@ block = statement block
       |
 
 statement = print
+          | ifStmt
+          | whileStmt
+          | forStmt
+          | functionDef
+          | returnStmt
           | level1
+
+
+
+// Updated Milestone 4 constructs in Recursive Style
+ifStmt = "if" level1 "then" block elseStmt "end"
+elseStmt = "else" block 
+            | 
+
+whileStmt = "while" level1 block "end"
+
+forStmt = "for" VARIABLE "in" "[" level1 "," level1 "]" block "end"
+
+functionDef = "def" VARIABLE "(" parameters ")" block "end"
+parameters = VARIABLE parameterTail 
+            |
+parameterTail = "," VARIABLE parameterTail 
+            |
+
+functionCall = VARIABLE "(" arguments ")"
+arguments = level1 argumentTail 
+            |
+argumentTail = "," level1 argumentTail 
+            |
+
+returnStmt = "return" level1
 
 print = "print" level1
 
@@ -64,4 +94,5 @@ primary = INTEGER
         | STRING
         | BOOLEAN
         | VARIABLE
+        | functionCall
         | "(" level1 ")"
